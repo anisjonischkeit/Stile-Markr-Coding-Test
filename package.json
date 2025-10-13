@@ -5,23 +5,29 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/start-server",
+    "dev": "pnpm migrate && tsx watch src/start-server",
     "build": "tsc",
     "start": "node dist/start-server.js",
-    "test": "vitest",
+    "migrate": "drizzle-kit migrate",
+    "test": "vitest --run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "format": "prettier --write src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.6",
     "fast-xml-parser": "^4.5.3",
     "fastify": "^5.6.1",
+    "pg": "^8.16.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@types/pg": "^8.15.5",
     "@vitest/coverage-v8": "^1.0.0",
+    "drizzle-kit": "^0.31.5",
     "prettier": "^3.1.0",
     "tsx": "^4.6.0",
     "typescript": "^5.3.0",
