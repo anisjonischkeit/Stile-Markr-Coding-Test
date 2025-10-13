@@ -159,4 +159,92 @@ describe("API Server", () => {
       expect(response.statusCode, response.body).toBe(400);
     });
   });
+
+  describe("GET /results/:testId/aggregate", () => {
+    beforeEach(async () => {
+      await db.delete(testResultsTable);
+    });
+
+    it("should return 404 for non-existent test", async () => {
+      const app = await createApp({ db });
+      const response = await app.inject({
+        method: "GET",
+        url: "/results/nonexistent/aggregate",
+      });
+
+      expect(response.statusCode).toBe(404);
+      expect(JSON.parse(response.body)).toEqual({
+        error: "No results found for this test",
+      });
+    });
+
+    it("should return correct aggregates for a single result", async () => {
+      const app = await createApp({ db });
+
+      // Insert test data
+      await db.insert(testResultsTable).values({
+        studentNumber: "123456",
+        testId: "test1",
+        firstName: "John",
+        lastName: "Doe",
+        scannedOn: "2023-01-01T10:00:00Z",
+        availableMarks: 100,
+        obtainedMarks: 75,
+      });
+
+      const response = await app.inject({
+        method: "GET",
+        url: "/results/test1/aggregate",
+      });
+
+      expect(response.statusCode).toBe(200);
+      const result = JSON.parse(response.body);
+      expect(result.mean).toBe(75);
+      expect(result.count).toBe(1);
+      expect(result.p25).toBe(75);
+      expect(result.p50).toBe(75);
+      expect(result.p75).toBe(75);
+      expect(result.min).toBe(75);
+      expect(result.max).toBe(75);
+    });
+
+    it("should return correct aggregates for multiple results", async () => {
+      const app = await createApp({ db });
+
+      // Insert test data with marks: 60, 70, 80, 90
+      const testData = [
+        { studentNumber: "123456", obtainedMarks: 60 },
+        { studentNumber: "234567", obtainedMarks: 70 },
+        { studentNumber: "345678", obtainedMarks: 80 },
+        { studentNumber: "456789", obtainedMarks: 90 },
+      ];
+
+      for (const data of testData) {
+        await db.insert(testResultsTable).values({
+          ...data,
+          testId: "test2",
+          firstName: "Test",
+          lastName: "Student",
+          scannedOn: "2023-01-01T10:00:00Z",
+          availableMarks: 100,
+        });
+      }
+
+      const response = await app.inject({
+        method: "GET",
+        url: "/results/test2/aggregate",
+      });
+
+      expect(response.statusCode).toBe(200);
+      const result = JSON.parse(response.body);
+
+      expect(result.mean).toBe(75);
+      expect(result.count).toBe(4);
+      expect(result.p25).toBe(60);
+      expect(result.p50).toBe(70);
+      expect(result.p75).toBe(80);
+      expect(result.min).toBe(60);
+      expect(result.max).toBe(90);
+    });
+  });
 });
