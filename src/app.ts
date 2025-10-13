@@ -65,7 +65,7 @@ export const createApp = async ({ db }: CreateAppContext) => {
         });
     }
 
-    return reply.send();
+    return reply.send("ok");
   });
 
   app.get("/results/:testId/aggregate", {}, async (req, reply) => {
