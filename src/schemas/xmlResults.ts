@@ -38,7 +38,6 @@ const xmlParser = new XMLParser({
 
 export const parseXMLResults = (str: string) => {
   const parsedXML = xmlParser.parse(str);
-  console.log(JSON.stringify(parsedXML, null, 2));
 
   return XMLResultsSchema.safeParse(parsedXML);
 };

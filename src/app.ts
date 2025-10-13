@@ -72,16 +72,20 @@ export const createApp = async ({ db }: CreateAppContext) => {
     const { testId } = req.params as { testId: string };
 
     const result = await db.execute(sql`
+      WITH percentages AS (
+        SELECT (obtained_marks::float / available_marks * 100) as percentage
+        FROM test_results
+        WHERE test_id = ${testId}
+      )
       SELECT
         COUNT(*)::int                                              AS count,
-        AVG(obtained_marks)::float                                 AS mean,
-        MIN(obtained_marks)                                        AS min,
-        MAX(obtained_marks)                                        AS max,
-        percentile_disc(0.25) WITHIN GROUP (ORDER BY obtained_marks) AS p25,
-        percentile_disc(0.50) WITHIN GROUP (ORDER BY obtained_marks) AS p50,
-        percentile_disc(0.75) WITHIN GROUP (ORDER BY obtained_marks) AS p75
-      FROM test_results
-      WHERE test_id = ${testId}
+        AVG(percentage)::float                                     AS mean,
+        MIN(percentage)                                            AS min,
+        MAX(percentage)                                            AS max,
+        percentile_disc(0.25) WITHIN GROUP (ORDER BY percentage) AS p25,
+        percentile_disc(0.50) WITHIN GROUP (ORDER BY percentage) AS p50,
+        percentile_disc(0.75) WITHIN GROUP (ORDER BY percentage) AS p75
+      FROM percentages
     `);
 
     if (!result.rows[0] || result.rows[0].count === 0) {

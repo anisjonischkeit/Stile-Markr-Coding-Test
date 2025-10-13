@@ -226,7 +226,7 @@ describe("API Server", () => {
           firstName: "Test",
           lastName: "Student",
           scannedOn: "2023-01-01T10:00:00Z",
-          availableMarks: 100,
+          availableMarks: 200,
         });
       }
 
@@ -238,13 +238,13 @@ describe("API Server", () => {
       expect(response.statusCode).toBe(200);
       const result = JSON.parse(response.body);
 
-      expect(result.mean).toBe(75);
+      expect(result.mean).toBe(37.5);
       expect(result.count).toBe(4);
-      expect(result.p25).toBe(60);
-      expect(result.p50).toBe(70);
-      expect(result.p75).toBe(80);
-      expect(result.min).toBe(60);
-      expect(result.max).toBe(90);
+      expect(result.p25).toBe(30);
+      expect(result.p50).toBe(35);
+      expect(result.p75).toBe(40);
+      expect(result.min).toBe(30);
+      expect(result.max).toBe(45);
     });
   });
 });
