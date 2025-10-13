@@ -53,7 +53,7 @@ export const createApp = async ({ db }: CreateAppContext) => {
         .insert(testResultsTable)
         .values(newRecord)
         .onConflictDoUpdate({
-          target: [testResultsTable.studentNumber, testResultsTable.testId],
+          target: [testResultsTable.testId, testResultsTable.studentNumber],
           set: {
             firstName: newRecord.firstName,
             lastName: newRecord.lastName,

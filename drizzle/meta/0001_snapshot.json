@@ -1,0 +1,82 @@
+{
+  "id": "0597c966-fb32-4025-bb7f-b212e341700f",
+  "prevId": "b9a76e3d-fd08-43f1-be35-2067820b453f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.test_results": {
+      "name": "test_results",
+      "schema": "",
+      "columns": {
+        "student_number": {
+          "name": "student_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "test_id": {
+          "name": "test_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scanned_on": {
+          "name": "scanned_on",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "available_marks": {
+          "name": "available_marks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obtained_marks": {
+          "name": "obtained_marks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "test_results_test_id_student_number_pk": {
+          "name": "test_results_test_id_student_number_pk",
+          "columns": [
+            "test_id",
+            "student_number"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

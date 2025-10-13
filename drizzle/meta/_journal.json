@@ -8,6 +8,13 @@
       "when": 1760273518354,
       "tag": "0000_furry_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760367952262,
+      "tag": "0001_silent_electro",
+      "breakpoints": true
     }
   ]
 }

@@ -12,6 +12,6 @@ export const testResultsTable = pgTable(
     obtainedMarks: integer("obtained_marks").notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.studentNumber, table.testId] }),
+    pk: primaryKey({ columns: [table.testId, table.studentNumber] }),
   }),
 );
