@@ -71,52 +71,35 @@ export const createApp = async ({ db }: CreateAppContext) => {
   app.get("/results/:testId/aggregate", {}, async (req, reply) => {
     const { testId } = req.params as { testId: string };
 
-    const results = await db
-      .select({ obtainedMarks: testResultsTable.obtainedMarks })
-      .from(testResultsTable)
-      .where(eq(testResultsTable.testId, testId));
+    const result = await db.execute(sql`
+      SELECT
+        COUNT(*)::int                                              AS count,
+        AVG(obtained_marks)::float                                 AS mean,
+        MIN(obtained_marks)                                        AS min,
+        MAX(obtained_marks)                                        AS max,
+        percentile_disc(0.25) WITHIN GROUP (ORDER BY obtained_marks) AS p25,
+        percentile_disc(0.50) WITHIN GROUP (ORDER BY obtained_marks) AS p50,
+        percentile_disc(0.75) WITHIN GROUP (ORDER BY obtained_marks) AS p75
+      FROM test_results
+      WHERE test_id = ${testId}
+    `);
 
-    if (results.length === 0) {
+    if (!result.rows[0] || result.rows[0].count === 0) {
       return reply
         .status(404)
         .send({ error: "No results found for this test" });
     }
 
-    const count = results.length;
-    let sum = 0;
-    let sumSquares = 0;
-    let min = Infinity;
-    let max = -Infinity;
-    const marks = new Array(count);
-    for (let i = 0; i < count; i++) {
-      const mark = results[i]!.obtainedMarks;
-      marks[i] = mark;
-      sum += mark;
-      sumSquares += mark * mark;
-      if (mark < min) min = mark;
-      if (mark > max) max = mark;
-    }
-
-    const mean = sum / count;
-
-    marks.sort((a, b) => a - b);
-
-    const p25Index = Math.ceil(count * 0.25) - 1;
-    const p50Index = Math.ceil(count * 0.5) - 1;
-    const p75Index = Math.ceil(count * 0.75) - 1;
-
-    const p25 = marks[p25Index];
-    const p50 = marks[p50Index];
-    const p75 = marks[p75Index];
+    const stats = result.rows[0];
 
     return reply.send({
-      mean,
-      count,
-      p25,
-      p50,
-      p75,
-      min,
-      max,
+      mean: stats.mean,
+      count: stats.count,
+      p25: Number(stats.p25),
+      p50: Number(stats.p50),
+      p75: Number(stats.p75),
+      min: stats.min,
+      max: stats.max,
     });
   });
 
