@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import { parseXMLResults } from "./schemas/xmlResults";
 import { testResultsTable } from "./db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 type CreateAppContext = {
@@ -49,38 +49,20 @@ export const createApp = async ({ db }: CreateAppContext) => {
         obtainedMarks: result["summary-marks"]["@_obtained"],
       };
 
-      try {
-        await db.insert(testResultsTable).values(newRecord);
-      } catch (error) {
-        await db.transaction(async (tx) => {
-          const existing = await tx
-            .select()
-            .from(testResultsTable)
-            .where(
-              and(
-                eq(testResultsTable.testId, newRecord.testId),
-                eq(testResultsTable.studentNumber, newRecord.studentNumber),
-              ),
-            )
-            .limit(1);
-
-          if (existing.length > 0) {
-            const existingRecord = existing[0]!;
-            if (newRecord.obtainedMarks > existingRecord.obtainedMarks) {
-              await tx
-                .delete(testResultsTable)
-                .where(
-                  and(
-                    eq(testResultsTable.testId, newRecord.testId),
-                    eq(testResultsTable.studentNumber, newRecord.studentNumber),
-                  ),
-                );
-
-              await tx.insert(testResultsTable).values(newRecord);
-            }
-          }
+      await db
+        .insert(testResultsTable)
+        .values(newRecord)
+        .onConflictDoUpdate({
+          target: [testResultsTable.studentNumber, testResultsTable.testId],
+          set: {
+            firstName: newRecord.firstName,
+            lastName: newRecord.lastName,
+            scannedOn: newRecord.scannedOn,
+            availableMarks: newRecord.availableMarks,
+            obtainedMarks: newRecord.obtainedMarks,
+          },
+          where: sql`${testResultsTable.obtainedMarks} < ${newRecord.obtainedMarks}`,
         });
-      }
     }
 
     return reply.send();
