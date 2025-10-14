@@ -7,7 +7,7 @@ export const testResultsTable = pgTable(
     testId: text("test_id").notNull(),
     firstName: text("first_name"),
     lastName: text("last_name"),
-    scannedOn: text("scanned_on"), // store ISO string or use timestamp if Postgres
+    scannedOn: text("scanned_on"),
     availableMarks: integer("available_marks").notNull(),
     obtainedMarks: integer("obtained_marks").notNull(),
   },
