@@ -38,32 +38,30 @@ export const createApp = async ({ db }: CreateAppContext) => {
 
     const mcqResults = parsedBody.data;
 
-    for (const result of mcqResults["mcq-test-results"]["mcq-test-result"]) {
-      const newRecord = {
-        studentNumber: result["student-number"],
-        testId: result["test-id"],
-        firstName: result["first-name"],
-        lastName: result["last-name"],
-        scannedOn: result["@_scanned-on"],
-        availableMarks: result["summary-marks"]["@_available"],
-        obtainedMarks: result["summary-marks"]["@_obtained"],
-      };
+    const records = mcqResults["mcq-test-results"]["mcq-test-result"].map((result) => ({
+      studentNumber: result["student-number"],
+      testId: result["test-id"],
+      firstName: result["first-name"],
+      lastName: result["last-name"],
+      scannedOn: result["@_scanned-on"],
+      availableMarks: result["summary-marks"]["@_available"],
+      obtainedMarks: result["summary-marks"]["@_obtained"],
+    }));
 
-      await db
-        .insert(testResultsTable)
-        .values(newRecord)
-        .onConflictDoUpdate({
-          target: [testResultsTable.testId, testResultsTable.studentNumber],
-          set: {
-            firstName: newRecord.firstName,
-            lastName: newRecord.lastName,
-            scannedOn: newRecord.scannedOn,
-            availableMarks: newRecord.availableMarks,
-            obtainedMarks: newRecord.obtainedMarks,
-          },
-          where: sql`${testResultsTable.obtainedMarks} < ${newRecord.obtainedMarks}`,
-        });
-    }
+    await db
+      .insert(testResultsTable)
+      .values(records)
+      .onConflictDoUpdate({
+        target: [testResultsTable.testId, testResultsTable.studentNumber],
+        set: {
+          firstName: sql.raw("excluded.first_name"),
+          lastName: sql.raw("excluded.last_name"),
+          scannedOn: sql.raw("excluded.scanned_on"),
+          availableMarks: sql.raw("excluded.available_marks"),
+          obtainedMarks: sql.raw("excluded.obtained_marks"),
+        },
+        where: sql`${testResultsTable.obtainedMarks} < excluded.obtained_marks OR ${testResultsTable.availableMarks} < excluded.available_marks`,
+      });
 
     return reply.send("ok");
   });
